@@ -49,6 +49,9 @@ pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{RelayLocation, XcmOriginToTransactDispatchOrigin};
 
+mod precompiles;
+use precompiles::FrontierPrecompiles;
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
