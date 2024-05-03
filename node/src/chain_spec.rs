@@ -242,7 +242,7 @@ fn testnet_genesis(
         },
         "sudo": { "key": Some(root) },
         // EVM compatibility
-        "evm_chain_id": { "chain_id": 1000 },
+        "evmChainId": { "chainId": 1000 },
         "evm": { "accounts": evm_accounts },
     })
 }
