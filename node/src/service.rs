@@ -73,21 +73,6 @@ type ParachainBackend = TFullBackend<Block>;
 
 type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, ParachainBackend>;
 
-/// Assembly of PartialComponents (enough to run chain ops subcommands)
-pub type Service = PartialComponents<
-    ParachainClient,
-    ParachainBackend,
-    (),
-    sc_consensus::DefaultImportQueue<Block>,
-    sc_transaction_pool::FullPool<Block, ParachainClient>,
-    (
-        ParachainBlockImport,
-        Option<Telemetry>,
-        Option<TelemetryWorkerHandle>,
-        Arc<FrontierBackend>,
-    ),
->;
-
 /// Starts a `ServiceBuilder` for a full service.
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
@@ -246,7 +231,7 @@ async fn start_node_impl(
         import_queue,
         keystore_container,
         transaction_pool,
-        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
+        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, _overrides),
         ..
     } = new_partial(&parachain_config, &eth_config)?;
 
@@ -411,7 +396,8 @@ async fn start_node_impl(
         fee_history_cache_limit,
         sync_service.clone(),
         pubsub_notification_sinks,
-    );
+    )
+    .await;
 
     if let Some(hwbench) = hwbench {
         sc_sysinfo::print_hwbench(&hwbench);
