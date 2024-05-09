@@ -397,7 +397,7 @@ async fn start_node_impl(
         fee_history_cache_limit,
         sync_service.clone(),
         pubsub_notification_sinks,
-    );
+    ).await;
 
     if let Some(hwbench) = hwbench {
         sc_sysinfo::print_hwbench(&hwbench);
