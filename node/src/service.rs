@@ -307,7 +307,6 @@ async fn start_node_impl(
 
     // for ethereum-compatibility rpc.
     parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-    // let overrides = crate::rpc::overrides_handle(client.clone());
     let eth_rpc_params = crate::rpc::EthDeps {
         client: client.clone(),
         pool: transaction_pool.clone(),
