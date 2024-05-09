@@ -1,5 +1,5 @@
 [package]
-name = "parachain-template-runtime"
+name = "frontier-parachain-runtime"
 version = "0.1.0"
 authors.workspace = true
 description = "Parachain runtime template"
@@ -81,7 +81,6 @@ fp-self-contained = { workspace = true }
 
 # Frontier FRAME
 pallet-base-fee = { workspace = true }
-pallet-dynamic-fee = { workspace = true }
 pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
 pallet-evm-chain-id = { workspace = true }
@@ -147,7 +146,6 @@ std = [
 	"fp-self-contained/std",
 	# Frontier FRAME
 	"pallet-base-fee/std",
-	"pallet-dynamic-fee/std",
 	"pallet-ethereum/std",
 	"pallet-evm/std",
 	"pallet-evm-chain-id/std",
@@ -210,7 +208,6 @@ try-runtime = [
 	"pallet-evm-chain-id/try-runtime",
 	"pallet-ethereum/try-runtime",
 	"pallet-base-fee/try-runtime",
-	"pallet-dynamic-fee/try-runtime",
 ]
 
 experimental = ["pallet-aura/experimental"]

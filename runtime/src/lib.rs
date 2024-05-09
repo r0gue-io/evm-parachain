@@ -32,7 +32,7 @@ use sp_std::{marker::PhantomData, prelude::*};
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use cumulus_primitives_core::{relay_chain::MAX_POV_SIZE, AggregateMessageOrigin, ParaId};
+use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::{
     construct_runtime, derive_impl,
     dispatch::DispatchClass,
@@ -70,7 +70,6 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 use xcm::latest::prelude::{AssetId, BodyId};
 
 // Frontier
-use fp_evm::weight_per_gas;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{
     Call::transact, PostLogContent, Transaction as EthereumTransaction, TransactionAction,
@@ -421,13 +420,6 @@ impl pallet_ethereum::Config for Runtime {
     type PostLogContent = PostBlockAndTxnHashes;
     type ExtraDataLength = ConstU32<30>;
 }
-parameter_types! {
-    pub BoundDivision: U256 = U256::from(1024);
-}
-
-impl pallet_dynamic_fee::Config for Runtime {
-    type MinGasPriceBoundDivisor = BoundDivision;
-}
 
 parameter_types! {
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
@@ -677,8 +669,7 @@ construct_runtime!(
         Ethereum: pallet_ethereum = 40,
         EVM: pallet_evm = 41,
         EVMChainId: pallet_evm_chain_id = 42,
-        DynamicFee: pallet_dynamic_fee = 43,
-        BaseFee: pallet_base_fee = 44,
+        BaseFee: pallet_base_fee = 43,
     }
 );
 

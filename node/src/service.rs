@@ -5,7 +5,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use parachain_template_runtime::{
+use frontier_parachain_runtime::{
     opaque::{Block, Hash},
     RuntimeApi, TransactionConverter,
 };
@@ -57,11 +57,11 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
     );
 
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-        parachain_template_runtime::api::dispatch(method, data)
+        frontier_parachain_runtime::api::dispatch(method, data)
     }
 
     fn native_version() -> sc_executor::NativeVersion {
-        parachain_template_runtime::native_version()
+        frontier_parachain_runtime::native_version()
     }
 }
 
@@ -231,7 +231,7 @@ async fn start_node_impl(
         import_queue,
         keystore_container,
         transaction_pool,
-        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, _overrides),
+        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
         ..
     } = new_partial(&parachain_config, &eth_config)?;
 
@@ -307,7 +307,7 @@ async fn start_node_impl(
 
     // for ethereum-compatibility rpc.
     parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-    let overrides = crate::rpc::overrides_handle(client.clone());
+    // let overrides = crate::rpc::overrides_handle(client.clone());
     let eth_rpc_params = crate::rpc::EthDeps {
         client: client.clone(),
         pool: transaction_pool.clone(),
