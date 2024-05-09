@@ -73,21 +73,6 @@ type ParachainBackend = TFullBackend<Block>;
 
 type ParachainBlockImport = TParachainBlockImport<Block, FrontierBlockImport, ParachainBackend>;
 
-/// Assembly of PartialComponents (enough to run chain ops subcommands)
-pub type Service = PartialComponents<
-    ParachainClient,
-    ParachainBackend,
-    (),
-    sc_consensus::DefaultImportQueue<Block>,
-    sc_transaction_pool::FullPool<Block, ParachainClient>,
-    (
-        ParachainBlockImport,
-        Option<Telemetry>,
-        Option<TelemetryWorkerHandle>,
-        Arc<FrontierBackend>,
-    ),
->;
-
 /// Starts a `ServiceBuilder` for a full service.
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
@@ -322,7 +307,7 @@ async fn start_node_impl(
 
     // for ethereum-compatibility rpc.
     parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-    let overrides = crate::rpc::overrides_handle(client.clone());
+    // let overrides = crate::rpc::overrides_handle(client.clone());
     let eth_rpc_params = crate::rpc::EthDeps {
         client: client.clone(),
         pool: transaction_pool.clone(),

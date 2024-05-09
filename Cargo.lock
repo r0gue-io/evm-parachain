@@ -4047,14 +4047,12 @@ dependencies = [
  "pallet-balances",
  "pallet-base-fee",
  "pallet-collator-selection",
- "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
- "pallet-hotfix-sufficients",
  "pallet-message-queue",
  "pallet-session",
  "pallet-sudo",
@@ -7131,22 +7129,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-dynamic-fee"
-version = "4.0.0-dev"
-source = "git+https://github.com/polkadot-evm/frontier?branch=polkadot-v1.9.0#f68f4c685ed0aed813dcfaac1a9f94fa33d83d5e"
-dependencies = [
- "fp-dynamic-fee",
- "fp-evm",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-inherents",
- "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.9.0)",
-]
-
-[[package]]
 name = "pallet-election-provider-multi-phase"
 version = "27.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.9.0#3c3d6fceb82372a3019b37117aa453d564b212de"
@@ -7329,22 +7311,6 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.9.0)",
-]
-
-[[package]]
-name = "pallet-hotfix-sufficients"
-version = "1.0.0"
-source = "git+https://github.com/polkadot-evm/frontier?branch=polkadot-v1.9.0#f68f4c685ed0aed813dcfaac1a9f94fa33d83d5e"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-evm",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.9.0)",
 ]
 

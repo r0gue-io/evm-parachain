@@ -65,7 +65,7 @@ const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
     args_conflicts_with_subcommands = true,
     subcommand_negates_reqs = true
 )]
-#[clap(after_help = AFTER_HELP_EXAMPLE)]
+#[command(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: Option<Subcommand>,
