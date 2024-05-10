@@ -11,7 +11,6 @@ pub mod xcm_config;
 
 use codec::{Decode, Encode};
 use cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
-use polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{
@@ -68,7 +67,7 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 
 // XCM Imports
-use xcm::latest::prelude::BodyId;
+use xcm::latest::prelude::{AssetId, BodyId};
 
 // Frontier
 use fp_evm::weight_per_gas;
@@ -201,8 +200,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("frontier-parachain-runtime"),
-    impl_name: create_runtime_str!("frontier-parachain-runtime"),
+    spec_name: create_runtime_str!("parachain-template-runtime"),
+    impl_name: create_runtime_str!("parachain-template-runtime"),
     authoring_version: 1,
     spec_version: 1,
     impl_version: 0,
@@ -230,6 +229,7 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
 pub const UNIT: Balance = 1_000_000_000_000;
+pub const CENTIUNIT: Balance = 10_000_000_000;
 pub const MILLIUNIT: Balance = 1_000_000_000;
 pub const MICROUNIT: Balance = 1_000_000;
 
@@ -245,9 +245,11 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 2 seconds of compute with a 6-second average block.
-pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = WEIGHT_REF_TIME_PER_SECOND.saturating_div(2);
-const MAXIMUM_BLOCK_WEIGHT: Weight =
-    Weight::from_parts(WEIGHT_MILLISECS_PER_BLOCK, MAX_POV_SIZE as u64);
+pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+    WEIGHT_MILLISECS_PER_BLOCK,
+    cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
+);
 
 /// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
 /// into the relay chain.
@@ -388,7 +390,7 @@ impl pallet_evm::Config for Runtime {
     type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type SuicideQuickClearLimit = SuicideQuickClearLimit;
     type Timestamp = Timestamp;
-    type WeightInfo = pallet_evm::weights::SubstrateWeight<Self>;
+    type WeightInfo = (); // Configure based on benchmarking results.;
 }
 
 parameter_types! {
@@ -452,7 +454,7 @@ impl pallet_balances::Config for Runtime {
     type DustRemoval = ();
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = System;
-    type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = (); // Configure based on benchmarking results.
     type MaxReserves = ConstU32<50>;
     type ReserveIdentifier = [u8; 8];
     type RuntimeHoldReason = RuntimeHoldReason;
@@ -478,7 +480,7 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
-    type WeightInfo = ();
+    type WeightInfo = (); // Configure based on benchmarking results.
 }
 
 parameter_types! {
@@ -495,7 +497,7 @@ type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
 >;
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
-    type WeightInfo = ();
+    type WeightInfo = (); // Configure based on benchmarking results.
     type RuntimeEvent = RuntimeEvent;
     type OnSystemEvent = ();
     type SelfParaId = parachain_info::Pallet<Runtime>;
@@ -516,7 +518,7 @@ parameter_types! {
 
 impl pallet_message_queue::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type WeightInfo = ();
+    type WeightInfo = (); // Configure based on benchmarking results.
     #[cfg(feature = "runtime-benchmarks")]
     type MessageProcessor = pallet_message_queue::mock_helpers::NoopMessageProcessor<
         cumulus_primitives_core::AggregateMessageOrigin,
@@ -538,6 +540,20 @@ impl pallet_message_queue::Config for Runtime {
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
+parameter_types! {
+    /// The asset ID for the asset that we use to pay for message delivery fees.
+    pub FeeAssetId: AssetId = AssetId(xcm_config::TokenLocation::get());
+    /// The base fee for the message delivery fees.
+    pub const BaseDeliveryFee: u128 = CENTIUNIT.saturating_mul(3);
+}
+
+pub type PriceForSiblingParachainDelivery = polkadot_runtime_common::xcm_sender::ExponentialPrice<
+    FeeAssetId,
+    BaseDeliveryFee,
+    TransactionByteFee,
+    XcmpQueue,
+>;
+
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type ChannelInfo = ParachainSystem;
@@ -547,8 +563,8 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
     type MaxInboundSuspended = sp_core::ConstU32<1_000>;
     type ControllerOrigin = EnsureRoot<AccountId>;
     type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-    type WeightInfo = ();
-    type PriceForSiblingDelivery = NoPriceForMessageDelivery<ParaId>;
+    type WeightInfo = (); // Configure based on benchmarking results.
+    type PriceForSiblingDelivery = PriceForSiblingParachainDelivery;
 }
 
 parameter_types! {
@@ -567,7 +583,7 @@ impl pallet_session::Config for Runtime {
     // Essentially just Aura, but let's be pedantic.
     type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
     type Keys = SessionKeys;
-    type WeightInfo = ();
+    type WeightInfo = (); // Configure based on benchmarking results.
 }
 
 impl pallet_aura::Config for Runtime {
@@ -605,11 +621,13 @@ impl pallet_collator_selection::Config for Runtime {
     type ValidatorId = <Self as frame_system::Config>::AccountId;
     type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
     type ValidatorRegistration = Session;
-    type WeightInfo = ();
+    type WeightInfo = (); // Configure based on benchmarking results.
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
+    // While this macro defines the pallets conforming the runtime,
+    // the ones to be benchmarked need to be explicitly passed to `define_benchmarks!`.
     pub enum Runtime {
         // System support stuff.
         System: frame_system = 0,
@@ -732,15 +750,16 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
     frame_benchmarking::define_benchmarks!(
+        // Only benchmark the following pallets
         [frame_system, SystemBench::<Runtime>]
-        [pallet_balances, Balances]
-        [pallet_session, SessionBench::<Runtime>]
+        [cumulus_pallet_parachain_system, ParachainSystem]
         [pallet_timestamp, Timestamp]
-        [pallet_message_queue, MessageQueue]
+        [pallet_balances, Balances]
         [pallet_sudo, Sudo]
         [pallet_collator_selection, CollatorSelection]
-        [cumulus_pallet_parachain_system, ParachainSystem]
+        [pallet_session, SessionBench::<Runtime>]
         [cumulus_pallet_xcmp_queue, XcmpQueue]
+        [pallet_message_queue, MessageQueue]
         [pallet_evm, EVM]
     );
 }
@@ -1119,7 +1138,6 @@ impl_runtime_apis! {
             Vec<frame_support::traits::StorageInfo>,
         ) {
             use frame_benchmarking::{Benchmarking, BenchmarkList};
-            use frame_benchmarking::list_benchmark;
             use frame_support::traits::StorageInfoTrait;
             use frame_system_benchmarking::Pallet as SystemBench;
             use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
@@ -1134,12 +1152,10 @@ impl_runtime_apis! {
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-            use frame_support::traits::TrackedStorageKey;
-            use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark};
+            use frame_benchmarking::{Benchmarking, BenchmarkBatch, BenchmarkError, add_benchmark};
             use pallet_evm::Pallet as PalletEvmBench;
 
             use frame_system_benchmarking::Pallet as SystemBench;
-            use frame_benchmarking::BenchmarkError;
             impl frame_system_benchmarking::Config for Runtime {
                 fn setup_set_code_requirements(code: &sp_std::vec::Vec<u8>) -> Result<(), BenchmarkError> {
                     ParachainSystem::initialize_for_set_code_benchmark(code.len() as u32);

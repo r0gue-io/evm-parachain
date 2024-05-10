@@ -21,7 +21,7 @@ use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, OverrideHandle};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Local
-use frontier_parachain_runtime::opaque::Block;
+use parachain_template_runtime::opaque::Block;
 
 /// Frontier DB backend type.
 pub type FrontierBackend = fc_db::Backend<Block>;
@@ -124,6 +124,7 @@ impl<Api> EthCompatRuntimeApiCollection for Api where
 {
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn spawn_frontier_tasks<RuntimeApi, Executor>(
     task_manager: &TaskManager,
     client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,

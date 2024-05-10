@@ -2,6 +2,7 @@ use crate::eth::EthConfiguration;
 use std::path::PathBuf;
 
 /// Sub-commands supported by the collator.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     /// Build a chain specification.
@@ -65,7 +66,7 @@ const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
     args_conflicts_with_subcommands = true,
     subcommand_negates_reqs = true
 )]
-#[clap(after_help = AFTER_HELP_EXAMPLE)]
+#[command(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: Option<Subcommand>,

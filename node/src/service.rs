@@ -5,7 +5,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use frontier_parachain_runtime::{
+use parachain_template_runtime::{
     opaque::{Block, Hash},
     RuntimeApi, TransactionConverter,
 };
@@ -57,11 +57,11 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
     );
 
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-        frontier_parachain_runtime::api::dispatch(method, data)
+        parachain_template_runtime::api::dispatch(method, data)
     }
 
     fn native_version() -> sc_executor::NativeVersion {
-        frontier_parachain_runtime::native_version()
+        parachain_template_runtime::native_version()
     }
 }
 
@@ -84,7 +84,8 @@ pub type Service = PartialComponents<
         ParachainBlockImport,
         Option<Telemetry>,
         Option<TelemetryWorkerHandle>,
-        Arc<FrontierBackend>,
+        FrontierBackend,
+        Arc<fc_rpc::OverrideHandle<Block>>,
     ),
 >;
 
@@ -95,23 +96,7 @@ pub type Service = PartialComponents<
 pub fn new_partial(
     config: &Configuration,
     eth_config: &EthConfiguration,
-) -> Result<
-    PartialComponents<
-        ParachainClient,
-        ParachainBackend,
-        (),
-        sc_consensus::DefaultImportQueue<Block>,
-        sc_transaction_pool::FullPool<Block, ParachainClient>,
-        (
-            ParachainBlockImport,
-            Option<Telemetry>,
-            Option<TelemetryWorkerHandle>,
-            FrontierBackend,
-            Arc<fc_rpc::OverrideHandle<Block>>,
-        ),
-    >,
-    sc_service::Error,
-> {
+) -> Result<Service, sc_service::Error> {
     let telemetry = config
         .telemetry_endpoints
         .clone()
@@ -246,7 +231,7 @@ async fn start_node_impl(
         import_queue,
         keystore_container,
         transaction_pool,
-        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
+        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, _overrides),
         ..
     } = new_partial(&parachain_config, &eth_config)?;
 
@@ -400,7 +385,8 @@ async fn start_node_impl(
         telemetry: telemetry.as_mut(),
     })?;
 
-    spawn_frontier_tasks(
+    #[allow(clippy::let_underscore_future)]
+    let _ = spawn_frontier_tasks(
         &task_manager,
         client.clone(),
         backend.clone(),
@@ -533,6 +519,7 @@ fn build_import_queue(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn start_consensus(
     client: Arc<ParachainClient>,
     backend: Arc<ParachainBackend>,
