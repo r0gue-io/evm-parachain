@@ -1,9 +1,8 @@
-# Base Parachain Template
+# EVM Parachain Template
 
-A new [Cumulus](https://github.com/paritytech/polkadot-sdk/tree/master/cumulus)-based Substrate node. 
+A new [Cumulus](https://github.com/paritytech/polkadot-sdk/tree/master/cumulus)-based Substrate node, configured with [Frontier](https://github.com/polkadot-evm/frontier), enabling compatibility with the Ethereum Virtual Machine (EVM).
 
-This project is a fork of the
-[Cumulus Parachain Template](https://github.com/paritytech/polkadot-sdk/tree/master/templates/parachain) from the [Polkadot SDK](https://github.com/paritytech/polkadot-sdk). 
+This project is a fork of the [Base Parachain Template](https://github.com/r0gue-io/base-parachain).
 
 It is used to generate parachains using [Pop CLI](https://github.com/r0gue-io/pop-cli), an all-in-one tool for Polkadot development.
 
