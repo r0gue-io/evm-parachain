@@ -17,6 +17,7 @@ where
     pub fn new() -> Self {
         Self(Default::default())
     }
+
     pub fn used_addresses() -> [H160; 7] {
         [
             hash(1),
@@ -29,6 +30,16 @@ where
         ]
     }
 }
+
+impl<R> Default for FrontierPrecompiles<R>
+where
+    R: pallet_evm::Config,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<R> PrecompileSet for FrontierPrecompiles<R>
 where
     R: pallet_evm::Config,

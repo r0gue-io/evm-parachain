@@ -385,6 +385,7 @@ async fn start_node_impl(
         telemetry: telemetry.as_mut(),
     })?;
 
+    #[allow(clippy::let_underscore_future)]
     let _ = spawn_frontier_tasks(
         &task_manager,
         client.clone(),
