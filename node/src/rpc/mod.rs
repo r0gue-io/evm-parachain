@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use frontier_parachain_runtime::{opaque::Block, AccountId, Balance, Nonce};
+use parachain_template_runtime::{opaque::Block, AccountId, Balance, Nonce};
 
 use sc_client_api::{
     backend::{AuxStore, Backend, StorageProvider},
