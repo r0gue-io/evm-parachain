@@ -364,7 +364,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
-/// Given the 500ms Weight, from which 75% only are used for transactions,
+/// Calculated with a conservative 500ms Weight, not accounting for async backing.
 /// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
 /// src: https://github.com/moonbeam-foundation/moonbeam/blob/master/runtime/moonbeam/src/lib.rs#L378
 /// Note: this is a conservative estimate considering async backing is enabled.
