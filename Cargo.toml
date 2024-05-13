@@ -130,7 +130,7 @@ fc-mapping-sync = {git = "https://github.com/polkadot-evm/frontier", features = 
 fc-rpc = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0", features = ["rpc-binary-search-estimate", "txpool"], default-features = false }
 fc-rpc-core = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0" }
 fc-storage = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0" }
-fp-dynamic-fee = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0", default-features = false }
+fp-dynamic-fee = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0"}
 fp-evm = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0", default-features = false }
 fp-rpc = {git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0", default-features = false }
 fp-self-contained = { git = "https://github.com/polkadot-evm/frontier", branch = "polkadot-v1.9.0", features = ["serde"], default-features = false }

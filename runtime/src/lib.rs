@@ -32,7 +32,7 @@ use sp_std::{marker::PhantomData, prelude::*};
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use cumulus_primitives_core::{relay_chain::MAX_POV_SIZE, AggregateMessageOrigin, ParaId};
+use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::{
     construct_runtime, derive_impl,
     dispatch::DispatchClass,
@@ -70,7 +70,6 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 use xcm::latest::prelude::{AssetId, BodyId};
 
 // Frontier
-use fp_evm::weight_per_gas;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{
     Call::transact, PostLogContent, Transaction as EthereumTransaction, TransactionAction,
@@ -132,7 +131,11 @@ pub type SignedExtra = (
 
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-    generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+    fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+
+/// Extrinsic type that has already been checked.
+pub type CheckedExtrinsic =
+    fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -228,10 +231,10 @@ pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const CENTIUNIT: Balance = 10_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
+pub const MICROUNIT: Balance = 1_000_000_000_000;
+pub const MILLIUNIT: Balance = 1_000 * MICROUNIT;
+pub const CENTIUNIT: Balance = 10 * MILLIUNIT;
+pub const UNIT: Balance = 100 * MILLIUNIT;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
@@ -359,16 +362,30 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
     }
 }
 
-const BLOCK_GAS_LIMIT: u64 = 75_000_000;
+/// Current approximation of the gas/s consumption considering
+/// EVM execution over compiled WASM (on 4.4Ghz CPU).
+/// Calculated with a conservative 500ms Weight, not accounting for async backing.
+/// the total EVM execution gas limit is: GAS_PER_SECOND * 0.500 * 0.75 ~= 15_000_000.
+/// src: https://github.com/moonbeam-foundation/moonbeam/blob/master/runtime/moonbeam/src/lib.rs#L378
+/// Note: this is a conservative estimate considering async backing is enabled.
+pub const GAS_PER_SECOND: u64 = 40_000_000;
+/// Approximate ratio of the amount of Weight per Gas.
+/// u64 works for approximations because Weight is a very small unit compared to gas.
+pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND / GAS_PER_SECOND;
 
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
-    pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE as u64);
+    pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
+    /// The amount of gas per pov. A ratio of 4 if we convert ref_time to gas and we compare
+    /// it with the pov_size for a block. E.g.
+    /// ceil(
+    ///     (max_extrinsic.ref_time() / max_extrinsic.proof_size()) / WEIGHT_REF_TIME_PER_GAS
+    /// )
+    /// https://github.com/moonbeam-foundation/moonbeam/blob/master/runtime/moonbeam/src/lib.rs#L414
+    pub GasLimitPovSizeRatio: u64 = 4;
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
-    pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
+    pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
     pub SuicideQuickClearLimit: u32 = 0;
 }
-
 impl pallet_evm::Config for Runtime {
     type FeeCalculator = BaseFee;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
@@ -402,13 +419,6 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
     type ExtraDataLength = ConstU32<30>;
-}
-parameter_types! {
-    pub BoundDivision: U256 = U256::from(1024);
-}
-
-impl pallet_dynamic_fee::Config for Runtime {
-    type MinGasPriceBoundDivisor = BoundDivision;
 }
 
 parameter_types! {
@@ -659,8 +669,7 @@ construct_runtime!(
         Ethereum: pallet_ethereum = 40,
         EVM: pallet_evm = 41,
         EVMChainId: pallet_evm_chain_id = 42,
-        DynamicFee: pallet_dynamic_fee = 43,
-        BaseFee: pallet_base_fee = 44,
+        BaseFee: pallet_base_fee = 43,
     }
 );
 
@@ -1017,7 +1026,7 @@ impl_runtime_apis! {
         fn extrinsic_filter(
             xts: Vec<<Block as BlockT>::Extrinsic>,
         ) -> Vec<EthereumTransaction> {
-            xts.into_iter().filter_map(|xt| match xt.function {
+            xts.into_iter().filter_map(|xt| match xt.0.function {
                 RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
                 _ => None
             }).collect::<Vec<EthereumTransaction>>()

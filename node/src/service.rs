@@ -231,7 +231,7 @@ async fn start_node_impl(
         import_queue,
         keystore_container,
         transaction_pool,
-        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, _overrides),
+        other: (block_import, mut telemetry, telemetry_worker_handle, frontier_backend, overrides),
         ..
     } = new_partial(&parachain_config, &eth_config)?;
 
@@ -307,7 +307,6 @@ async fn start_node_impl(
 
     // for ethereum-compatibility rpc.
     parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-    let overrides = crate::rpc::overrides_handle(client.clone());
     let eth_rpc_params = crate::rpc::EthDeps {
         client: client.clone(),
         pool: transaction_pool.clone(),
@@ -397,7 +396,8 @@ async fn start_node_impl(
         fee_history_cache_limit,
         sync_service.clone(),
         pubsub_notification_sinks,
-    );
+    )
+    .await;
 
     if let Some(hwbench) = hwbench {
         sc_sysinfo::print_hwbench(&hwbench);

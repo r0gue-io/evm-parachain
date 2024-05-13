@@ -1,4 +1,5 @@
 use cumulus_primitives_core::ParaId;
+use hex_literal::hex;
 use parachain_template_runtime as runtime;
 use runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -66,7 +67,7 @@ pub fn development_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
+    properties.insert("tokenDecimals".into(), 18.into());
     properties.insert("ss58Format".into(), 42.into());
 
     ChainSpec::builder(
@@ -116,7 +117,7 @@ pub fn local_testnet_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
+    properties.insert("tokenDecimals".into(), 18.into());
     properties.insert("ss58Format".into(), 42.into());
 
     #[allow(deprecated)]
@@ -156,6 +157,8 @@ pub fn local_testnet_config() -> ChainSpec {
             get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
             get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
             get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+            //prefunded EVM account
+            hex!["e1ad20aae239ccbb609aa537d515dc9d53c5936ea67d8acc9fe0618925279f7d"].into(),
         ],
         get_account_id_from_seed::<sr25519::Public>("Alice"),
         2000.into(),
@@ -216,7 +219,7 @@ fn testnet_genesis(
     };
     serde_json::json!({
         "balances": {
-            "balances": endowed_accounts.iter().cloned().map(|k| (k, 1u64 << 60)).collect::<Vec<_>>(),
+            "balances": endowed_accounts.iter().cloned().map(|k| (k, 1u128 << 80)).collect::<Vec<_>>(),
         },
         "parachainInfo": {
             "parachainId": id,
