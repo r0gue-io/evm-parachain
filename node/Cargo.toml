@@ -14,7 +14,7 @@ publish = false
 [dependencies]
 clap = { workspace = true }
 log = { workspace = true }
-codec = { workspace = true }
+parity-scale-codec = { workspace = true }
 serde = { workspace = true }
 jsonrpsee = { workspace = true }
 futures = { workspace = true }
@@ -83,7 +83,7 @@ fc-mapping-sync = { workspace = true }
 fc-rpc = { workspace = true }
 fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
-fp-dynamic-fee = { workspace = true }
+fp-dynamic-fee = { workspace = true, features = [ "std" ] }
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 
