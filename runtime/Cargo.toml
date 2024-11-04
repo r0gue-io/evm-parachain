@@ -16,10 +16,10 @@ targets = ["x86_64-unknown-linux-gnu"]
 substrate-wasm-builder = { workspace = true }
 
 [dependencies]
-parity-scale-codec = { workspace = true }
+parity-scale-codec = { workspace = true, features = [ "derive" ] }
 hex-literal = { workspace = true }
 log = { workspace = true }
-scale-info = { workspace = true }
+scale-info = { workspace = true, features = [ "derive" ] }
 smallvec = { workspace = true }
 
 # Substrate
@@ -77,7 +77,7 @@ parachain-info = { workspace = true }
 # Frontier
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
-fp-self-contained = { workspace = true }
+fp-self-contained = { workspace = true, features = [ "serde" ] }
 
 # Frontier FRAME
 pallet-base-fee = { workspace = true }
@@ -209,5 +209,3 @@ try-runtime = [
 	"pallet-ethereum/try-runtime",
 	"pallet-base-fee/try-runtime",
 ]
-
-experimental = ["pallet-aura/experimental"]

@@ -36,7 +36,7 @@ use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use frame_support::{
     construct_runtime, derive_impl,
     dispatch::DispatchClass,
-    genesis_builder_helper::{build_config, create_default_config},
+    genesis_builder_helper::{build_state, get_preset},
     parameter_types,
     traits::{
         ConstBool, ConstU32, ConstU64, ConstU8, EitherOfDiverse, FindAuthor, OnFinalize,
@@ -518,6 +518,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type XcmpMessageHandler = XcmpQueue;
     type ReservedXcmpWeight = ReservedXcmpWeight;
     type CheckAssociatedRelayNumber = RelayNumberMonotonicallyIncreases;
+    type ConsensusHook = ConsensusHook;
 }
 
 impl parachain_info::Config for Runtime {}
@@ -576,6 +577,10 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
     type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
     type WeightInfo = (); // Configure based on benchmarking results.
     type PriceForSiblingDelivery = PriceForSiblingParachainDelivery;
+    // Limit the number of messages and signals a HRML channel can have at most
+    type MaxActiveOutboundChannels = ConstU32<128>;
+    // Limit the number of HRML channels
+    type MaxPageSize = ConstU32<{ 1 << 16 }>;
 }
 
 parameter_types! {
@@ -1052,6 +1057,10 @@ impl_runtime_apis! {
                 pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
             )
         }
+
+        fn initialize_pending_block(header: &<Block as BlockT>::Header) {
+            Executive::initialize_block(header);
+        }
     }
 
     impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
@@ -1193,12 +1202,16 @@ impl_runtime_apis! {
     }
 
     impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
-        fn create_default_config() -> Vec<u8> {
-            create_default_config::<RuntimeGenesisConfig>()
+        fn build_state(config: Vec<u8>) -> sp_genesis_builder::Result {
+            build_state::<RuntimeGenesisConfig>(config)
         }
 
-        fn build_config(config: Vec<u8>) -> sp_genesis_builder::Result {
-            build_config::<RuntimeGenesisConfig>(config)
+        fn get_preset(id: &Option<sp_genesis_builder::PresetId>) -> Option<Vec<u8>> {
+            get_preset::<RuntimeGenesisConfig>(id, |_| None)
+        }
+
+        fn preset_names() -> Vec<sp_genesis_builder::PresetId> {
+            Default::default()
         }
     }
 }

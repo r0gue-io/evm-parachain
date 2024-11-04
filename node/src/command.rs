@@ -19,7 +19,7 @@ use std::sync::Arc;
 use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
-    service::new_partial,
+    service::{self, new_partial},
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
@@ -232,7 +232,7 @@ pub fn run() -> Result<()> {
 					crate::service::new_partial(&config, &cli.eth)?;
 				let (_, _, _, frontier_backend, _) = other;
 				let frontier_backend = match frontier_backend {
-					fc_db::Backend::KeyValue(kv) => Arc::new(kv),
+					fc_db::Backend::KeyValue(kv) => kv,
 					_ => panic!("Only fc_db::Backend::KeyValue supported"),
 				};
 				cmd.run(client, frontier_backend)
@@ -277,8 +277,8 @@ pub fn run() -> Result<()> {
 				crate::service::start_parachain_node(
 					config,
 					polkadot_config,
-                    eth_cfg,
-					collator_options,
+                    collator_options,
+                    &cli.eth,
 					id,
 					hwbench,
 				)
