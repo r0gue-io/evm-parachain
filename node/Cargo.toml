@@ -13,6 +13,7 @@ publish = false
 
 [dependencies]
 clap = { workspace = true }
+docify = { workspace = true }
 log = { workspace = true }
 parity-scale-codec = { workspace = true }
 serde = { workspace = true, features = [ "derive" ] }
