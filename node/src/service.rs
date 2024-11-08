@@ -15,8 +15,10 @@ use cumulus_client_service::{
     BuildNetworkParams, CollatorSybilResistance, DARecoveryProfile, ParachainHostFunctions,
     StartRelayChainTasksParams,
 };
-use cumulus_primitives_core::relay_chain::ValidationCode;
-use cumulus_primitives_core::{relay_chain::CollatorPair, ParaId};
+use cumulus_primitives_core::{
+    relay_chain::{CollatorPair, ValidationCode},
+    ParaId,
+};
 use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 // Local Runtime Types
 use parachain_template_runtime::{
