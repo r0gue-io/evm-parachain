@@ -13,10 +13,11 @@ publish = false
 
 [dependencies]
 clap = { workspace = true }
+docify = { workspace = true }
 log = { workspace = true }
-codec = { workspace = true }
-serde = { workspace = true }
-jsonrpsee = { workspace = true }
+parity-scale-codec = { workspace = true }
+serde = { workspace = true, features = [ "derive" ] }
+jsonrpsee = { workspace = true, features = [ "server" ]  }
 futures = { workspace = true }
 serde_json = { workspace = true }
 color-print = { workspace = true }
@@ -35,6 +36,7 @@ sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-offchain = { workspace = true }
 sc-consensus = { workspace = true }
+sc-consensus-aura = { workspace = true }
 sc-executor = { workspace = true }
 sc-network = { workspace = true }
 sc-network-sync = { workspace = true }
@@ -78,12 +80,12 @@ cumulus-relay-chain-interface = { workspace = true }
 fc-api = { workspace = true }
 fc-cli = { workspace = true }
 fc-consensus = { workspace = true }
-fc-db = { workspace = true }
-fc-mapping-sync = { workspace = true }
+fc-db = { workspace = true, features = [ "rocksdb" ] }
+fc-mapping-sync = { workspace = true, features = [ "sql" ] }
 fc-rpc = { workspace = true }
 fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
-fp-dynamic-fee = { workspace = true }
+fp-dynamic-fee = { workspace = true, features = [ "std" ] }
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 

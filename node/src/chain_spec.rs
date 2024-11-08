@@ -10,7 +10,7 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -24,11 +24,12 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
-#[serde(deny_unknown_fields)]
 pub struct Extensions {
     /// The relay chain of the Parachain.
+    #[serde(alias = "relayChain", alias = "RelayChain")]
     pub relay_chain: String,
     /// The id of the Parachain.
+    #[serde(alias = "paraId", alias = "ParaId")]
     pub para_id: u32,
 }
 
@@ -183,6 +184,30 @@ fn testnet_genesis(
             // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
             // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
             H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+                .expect("internal H160 is valid; qed"),
+            fp_evm::GenesisAccount {
+                balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                    .expect("internal U256 is valid; qed"),
+                code: Default::default(),
+                nonce: Default::default(),
+                storage: Default::default(),
+            },
+        );
+        // Alith
+        map.insert(
+            H160::from_str("f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")
+                .expect("internal H160 is valid; qed"),
+            fp_evm::GenesisAccount {
+                balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                    .expect("internal U256 is valid; qed"),
+                code: Default::default(),
+                nonce: Default::default(),
+                storage: Default::default(),
+            },
+        );
+        // Baltathar
+        map.insert(
+            H160::from_str("3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")
                 .expect("internal H160 is valid; qed"),
             fp_evm::GenesisAccount {
                 balance: U256::from_str("0xffffffffffffffffffffffffffffffff")

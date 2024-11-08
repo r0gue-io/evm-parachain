@@ -3,12 +3,13 @@ use fc_rpc_core::EthApiServer;
 use jsonrpsee::RpcModule;
 use std::{collections::BTreeMap, sync::Arc};
 // Substrate
+pub use fc_storage::StorageOverride;
 use sc_client_api::{
     backend::{Backend, StorageProvider},
     client::BlockchainEvents,
     AuxStore, UsageProvider,
 };
-use sc_network::NetworkService;
+use sc_network::service::traits::NetworkService;
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -20,11 +21,10 @@ use sp_consensus_aura::{sr25519::AuthorityId as AuraId, AuraApi};
 use sp_core::H256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
-pub use fc_rpc::{EthBlockDataCacheTask, EthConfig, OverrideHandle};
+pub use fc_rpc::{EthBlockDataCacheTask, EthConfig};
 #[cfg(feature = "txpool")]
 use fc_rpc::{TxPool, TxPoolApiServer};
 pub use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
-pub use fc_storage::overrides_handle;
 use fp_rpc::{ConvertTransaction, ConvertTransactionRuntimeApi, EthereumRuntimeRPCApi};
 
 /// Extra dependencies for Ethereum compatibility.
@@ -42,13 +42,13 @@ pub struct EthDeps<C, P, A: ChainApi, CT, B: BlockT, CIDP> {
     /// Whether to enable dev signer
     pub enable_dev_signer: bool,
     /// Network service
-    pub network: Arc<NetworkService<B, B::Hash>>,
+    pub network: Arc<dyn NetworkService>,
     /// Chain syncing service
     pub sync: Arc<SyncingService<B>>,
     /// Frontier Backend.
     pub frontier_backend: Arc<dyn fc_api::Backend<B>>,
     /// Ethereum data access overrides.
-    pub overrides: Arc<OverrideHandle<B>>,
+    pub overrides: Arc<dyn StorageOverride<B>>,
     /// Cache for Ethereum block data.
     pub block_data_cache: Arc<EthBlockDataCacheTask<B>>,
     /// EthFilterApi pool.
